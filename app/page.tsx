@@ -209,15 +209,14 @@ export default function Home() {
         nodes[nodes.length - 2].data.status = "normal"; // Production Folder is safe now
 
         edges.push(
-          // severed nested edge
-          { id: "e-devs-plat-cut", source: "developers", target: "platform", className: "rf-edge-cut" },
-          // alice -> platform is also severed to completely isolate Alice
-          { id: "e-alice-plat-cut", source: "alice", target: "platform", className: "rf-edge-cut" },
+          // severed nested edge between platform and prod-admins
+          { id: "e-plat-admins-cut", source: "platform", target: "prod-admins", className: "rf-edge-cut" },
           // New glowing safe direct bindings
           { id: "e-alice-viewrole", source: "alice", target: "roles/compute.viewer", className: "rf-edge-safe" },
           { id: "e-viewrole-prodfold", source: "roles/compute.viewer", target: "production-folder", className: "rf-edge-safe" },
-          // Standard admin nodes are inactive but intact for platform engineers
-          { id: "e-plat-admins", source: "platform", target: "prod-admins", className: "rf-edge-normal", opacity: 0.3 } as any,
+          // Standard developers/platform links are inactive but intact
+          { id: "e-devs-plat", source: "developers", target: "platform", className: "rf-edge-normal", opacity: 0.3 } as any,
+          { id: "e-alice-plat", source: "alice", target: "platform", className: "rf-edge-normal", opacity: 0.3 } as any,
           { id: "e-admins-adminrole", source: "prod-admins", target: "roles/compute.admin", className: "rf-edge-normal", opacity: 0.3 } as any,
           { id: "e-adminrole-prodfold", source: "roles/compute.admin", target: "production-folder", className: "rf-edge-normal", opacity: 0.3 } as any
         );

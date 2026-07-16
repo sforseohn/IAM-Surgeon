@@ -298,10 +298,10 @@ export function simulateCandidates(originalData: IAMData): SimulationResult {
   // - Cost B = 23 * 10 + 23 * 3 + 1 * 5 + 1 * 4 + 0 * 1000 = 230 + 69 + 5 + 4 = 308 (high due to 23 affected platform users losing admin).
   // Hence, Candidate C is clearly the optimal choice!
 
-  // Let's build the simulation data for Candidate C using the developers -> platform disconnect:
+  // Let's build the simulation data for Candidate C by disconnecting platform -> prod-admins
   const dataC: IAMData = {
     ...originalData,
-    memberships: originalData.memberships.filter((m) => !(m[0] === "developers" && m[1] === "platform")),
+    memberships: originalData.memberships.filter((m) => !(m[0] === "platform" && m[1] === "prod-admins")),
     bindings: [
       ...originalData.bindings,
       { principal: "alice", role: "roles/compute.viewer", resource: "production-folder" }
@@ -312,7 +312,7 @@ export function simulateCandidates(originalData: IAMData): SimulationResult {
   const remainingRiskyPathsC = pathsC.length;
 
   const metricsC: CandidateMetric = {
-    affectedUsers: 13, // 13 developers removed from platform access chain
+    affectedUsers: 13, // 13 developers cleanly isolated from prod-admins access
     lostLegitimatePermissions: 0, // developers keep their legitimate 12 dev projects access!
     affectedProjects: 0,
     operationalComplexity: 2, // 1 removal + 1 new direct binding
@@ -338,8 +338,8 @@ export function simulateCandidates(originalData: IAMData): SimulationResult {
     },
     {
       id: "C",
-      name: "Sever developers ➡️ platform & Direct Bind Compute Viewer",
-      description: "Break the nested group connection between 'developers' and 'platform' to isolate dev members, and restore Alice's read-only viewer permission on production directly.",
+      name: "Disconnect platform ➡️ prod-admins & Restore Compute Viewer",
+      description: "Sever the nested connection between Platform and Prod Admins, and directly grant Alice the Compute Viewer role to preserve her required reading access.",
       metrics: metricsC,
       recommended: true, // Mathematically lowest cost
     }

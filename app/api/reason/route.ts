@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       
       INSTRUCTIONS:
       Provide a highly precise, professional, 2-3 sentence justification explaining why Candidate ${candidateId} is either highly recommended or problematic.
-      - If Candidate C is selected (Disconnect developers -> platform & bind direct viewer to Alice), emphasize that it breaks the security risk while maintaining her 12 normal projects access and granting direct read-only viewer rights, resulting in the smallest blast radius.
+      - If Candidate C is selected (Disconnect platform -> prod-admins & Restore Compute Viewer), emphasize that it breaks the security risk (disconnecting platform -> prod-admins) while maintaining Alice's 12 normal projects access (since developers group is untouched) and granting direct read-only viewer rights, resulting in the smallest blast radius.
       - If Candidate A is selected (Remove Alice from developers), explain that this is a blunt, bad option because she loses all her 12 normal development projects and she still retains the risk because of other redundant paths.
       - If Candidate B is selected (Disconnect platform -> prod-admins), explain that although the risk path is severed, it is too disruptive because 23 platform engineers recursively lose production admin access.
       
