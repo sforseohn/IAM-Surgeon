@@ -402,43 +402,169 @@ export default function Home() {
                 <p>Click <strong>Scan IAM</strong> to run vulnerability discovery on GCP response.</p>
               </div>
             ) : (
-              findings.map((f) => (
-                <div key={f.id} className={`finding-card ${f.severity}`}>
-                  <div className="finding-header">
-                    <span className="finding-id-badge" style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", background: "rgba(255,255,255,0.05)", padding: "0.1rem 0.3rem", borderRadius: "4px", color: "var(--text-secondary)" }}>
-                      {f.id.split("-").slice(0, 2).join("-")}
+              <>
+                {/* 🛡️ SECURITY HEALTH CHECK SCORE WIDGET */}
+                <div className="health-score-widget" style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                  borderRadius: "12px",
+                  padding: "1rem",
+                  marginBottom: "0.5rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.8rem",
+                  boxShadow: "inset 0 0 20px rgba(0,0,0,0.2)"
+                }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.05em" }}>
+                      GCP IAM SECURITY HEALTH
                     </span>
-                    <span className={`severity-badge ${f.severity}`}>{f.severity}</span>
-                  </div>
-                  <div className="finding-title" style={{ fontSize: "0.85rem", fontWeight: 700, marginTop: "0.2rem" }}>
-                    {f.id.includes("01") ? "🔗 " : f.id.includes("02") ? "🛡️ " : "🔀 "} {f.title}
-                  </div>
-                  
-                  {/* Highly visual summary block */}
-                  <div className="finding-highlight-summary" style={{ margin: "0.4rem 0", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: "1.3" }}>
-                    {f.id.includes("RISK-01") ? (
-                      <div>
-                        Target: <code style={{ color: "var(--color-danger)" }}>alice</code> inherits <code style={{ color: "var(--color-danger)" }}>Compute Admin</code> through nested chain:
-                        <div style={{ marginTop: "0.25rem", background: "rgba(0,0,0,0.2)", padding: "0.3rem", borderRadius: "6px", fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-danger)", display: "flex", gap: "0.2rem", alignItems: "center" }}>
-                          alice ➡️ dev ➡️ plat ➡️ admins
-                        </div>
-                      </div>
-                    ) : f.id.includes("RISK-02") ? (
-                      <div>
-                        Violation: Broad administrative scope on <code>production-folder</code> violates <strong>least privilege</strong> rules.
-                      </div>
-                    ) : (
-                      <div>
-                        Redundancy: <code style={{ color: "var(--color-warning)" }}>alice</code> has multiple paths to production, complicating audit.
-                      </div>
-                    )}
+                    <span style={{
+                      fontSize: "0.7rem",
+                      fontWeight: 800,
+                      padding: "0.15rem 0.4rem",
+                      borderRadius: "4px",
+                      background: demoStep < 3 ? "rgba(239, 68, 68, 0.12)" : selectedCandidate === "C" ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                      color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)",
+                      border: "1px solid"
+                    }}>
+                      {demoStep < 3 ? "CRITICAL RISK" : selectedCandidate === "C" ? "FULLY SECURED" : "PARTIAL RISK"}
+                    </span>
                   </div>
 
-                  <div className="finding-evidence" style={{ fontSize: "0.7rem", opacity: 0.8, color: "var(--text-muted)" }}>
-                    <strong>Evidence:</strong> {f.evidence}
+                  <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                    {/* Gauge Circle */}
+                    <div style={{
+                      position: "relative",
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      background: `conic-gradient(${
+                        demoStep < 3 
+                          ? "var(--color-danger)" 
+                          : selectedCandidate === "C" 
+                          ? "var(--color-success)" 
+                          : "var(--color-warning)"
+                      } ${
+                        demoStep < 3 ? "122deg" : selectedCandidate === "C" ? "360deg" : selectedCandidate === "B" ? "288deg" : "162deg"
+                      }, rgba(255,255,255,0.05) 0)`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center"
+                    }}>
+                      {/* Inner mask */}
+                      <div style={{
+                        position: "absolute",
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        background: "#0d111c",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 800,
+                        fontSize: "1.1rem",
+                        fontFamily: "var(--font-mono)",
+                        color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
+                      }}>
+                        {demoStep < 3 ? "34%" : selectedCandidate === "C" ? "100%" : selectedCandidate === "B" ? "80%" : "45%"}
+                      </div>
+                    </div>
+
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                      <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
+                        {demoStep < 3 
+                          ? "Critical Inheritance Threat" 
+                          : selectedCandidate === "C" 
+                          ? "Optimal Isolation Configured" 
+                          : selectedCandidate === "B"
+                          ? "Secure but High Disruption"
+                          : "Partial Isolation (Redundant Paths)"}
+                      </div>
+                      <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
+                        {demoStep < 3 
+                          ? "Alice inherits administrative privileges through 3 nested vulnerabilities." 
+                          : selectedCandidate === "C" 
+                          ? "Risk isolated completely, required viewer role mapped. 0 users disrupted." 
+                          : selectedCandidate === "B"
+                          ? "Alice isolated, but 23 team engineers lost critical access."
+                          : "Alice lost dev access to 12 projects, but threat remains."}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tiny Quick Stats bar */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, 1fr)",
+                    gap: "0.4rem",
+                    borderTop: "1px solid rgba(255,255,255,0.03)",
+                    paddingTop: "0.6rem",
+                    textAlign: "center",
+                    fontSize: "0.7rem"
+                  }}>
+                    <div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Scope Users</div>
+                      <strong style={{ color: "var(--text-primary)" }}>23</strong>
+                    </div>
+                    <div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Active Risks</div>
+                      <strong style={{
+                        color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
+                      }}>
+                        {demoStep < 3 ? "3" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "0" : "1"}
+                      </strong>
+                    </div>
+                    <div>
+                      <div style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Disrupted Users</div>
+                      <strong style={{
+                        color: demoStep < 3 ? "var(--text-muted)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-danger)"
+                      }}>
+                        {demoStep < 3 ? "0" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "23" : "1"}
+                      </strong>
+                    </div>
                   </div>
                 </div>
-              ))
+
+                {/* Individual Findings Cards */}
+                {findings.map((f) => (
+                  <div key={f.id} className={`finding-card ${f.severity}`}>
+                    <div className="finding-header">
+                      <span className="finding-id-badge" style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", background: "rgba(255,255,255,0.05)", padding: "0.1rem 0.3rem", borderRadius: "4px", color: "var(--text-secondary)" }}>
+                        {f.id.split("-").slice(0, 2).join("-")}
+                      </span>
+                      <span className={`severity-badge ${f.severity}`}>{f.severity}</span>
+                    </div>
+                    <div className="finding-title" style={{ fontSize: "0.85rem", fontWeight: 700, marginTop: "0.2rem" }}>
+                      {f.id.includes("01") ? "🔗 " : f.id.includes("02") ? "🛡️ " : "🔀 "} {f.title}
+                    </div>
+                    
+                    {/* Highly visual summary block */}
+                    <div className="finding-highlight-summary" style={{ margin: "0.4rem 0", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: "1.3" }}>
+                      {f.id.includes("RISK-01") ? (
+                        <div>
+                          Target: <code style={{ color: "var(--color-danger)" }}>alice</code> inherits <code style={{ color: "var(--color-danger)" }}>Compute Admin</code> through nested chain:
+                          <div style={{ marginTop: "0.25rem", background: "rgba(0,0,0,0.2)", padding: "0.3rem", borderRadius: "6px", fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-danger)", display: "flex", gap: "0.2rem", alignItems: "center" }}>
+                            alice ➡️ dev ➡️ plat ➡️ admins
+                          </div>
+                        </div>
+                      ) : f.id.includes("RISK-02") ? (
+                        <div>
+                          Violation: Broad administrative scope on <code>production-folder</code> violates <strong>least privilege</strong> rules.
+                        </div>
+                      ) : (
+                        <div>
+                          Redundancy: <code style={{ color: "var(--color-warning)" }}>alice</code> has multiple paths to production, complicating audit.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="finding-evidence" style={{ fontSize: "0.7rem", opacity: 0.8, color: "var(--text-muted)" }}>
+                      <strong>Evidence:</strong> {f.evidence}
+                    </div>
+                  </div>
+                ))}
+              </>
             )}
           </div>
         </aside>
