@@ -87,13 +87,20 @@ export default function Home() {
   const [nlpLoading, setNlpLoading] = useState(false);
   const [compiledConstraint, setCompiledConstraint] = useState<string | null>(null);
 
+  const [recommendedCandidateId, setRecommendedCandidateId] = useState<"A" | "B" | "C">("C");
+
   // Run initial calculations
   const simResults: SimulationResult = useMemo(() => simulateCandidates(mockGcpResponse), []);
   const findings: RiskFinding[] = simResults.findings;
   const candidates: CandidateSimulation[] = useMemo(() => {
-    // Sort by cost ascending, so recommended C is first!
-    return [...simResults.candidates].sort((a, b) => a.metrics.cost - b.metrics.cost);
-  }, [simResults]);
+    const list = [...simResults.candidates];
+    // Put the currently recommended candidate at the very top, and sort the rest by cost
+    return list.sort((a, b) => {
+      if (a.id === recommendedCandidateId) return -1;
+      if (b.id === recommendedCandidateId) return 1;
+      return a.metrics.cost - b.metrics.cost;
+    });
+  }, [simResults, recommendedCandidateId]);
 
   const currentCandidate = useMemo(() => {
     return candidates.find((c) => c.id === selectedCandidate) || candidates[0];
@@ -315,13 +322,15 @@ export default function Home() {
         `ASSERT (user == "alice") CAN_ACCESS ("folders/development-folder")`
       );
       // Candidate C perfectly satisfies this (preserves dev access, blocks admin production delete/write)
+      setRecommendedCandidateId("C");
       handleApplyCandidateSimulation("C");
     } else {
       setCompiledConstraint(
         `ASSERT (group == "platform") ALLOW_READ_ONLY ("billing/*")\n` +
         `ASSERT (group == "platform") DENY ("roles/resourcemanager.folderAdmin")`
       );
-      // Candidate B severs nested admin access for all platform engineers
+      // Candidate B severs nested admin access for all platform engineers, keeping billing read-only intact
+      setRecommendedCandidateId("B");
       handleApplyCandidateSimulation("B");
     }
     setNlpLoading(false);
@@ -335,6 +344,7 @@ export default function Home() {
     setDemoStep(0);
     setActiveTab("before");
     setSelectedTabCandidate("C");
+    setRecommendedCandidateId("C");
     setGeminiExplanation(null);
     setNlpPolicyInput("");
     setCompiledConstraint(null);
@@ -801,14 +811,14 @@ export default function Home() {
               candidates.map((c) => (
                 <div 
                   key={c.id} 
-                  className={`candidate-card ${selectedCandidate === c.id ? "selected" : ""} ${c.recommended ? "recommended" : ""}`}
+                  className={`candidate-card ${selectedCandidate === c.id ? "selected" : ""} ${recommendedCandidateId === c.id ? "recommended" : ""}`}
                   onClick={() => {
                     handleApplyCandidateSimulation(c.id);
                   }}
                 >
-                  {c.recommended && <span className="candidate-badge rec">🏆 Best Choice</span>}
-                  {!c.recommended && selectedCandidate === c.id && <span className="candidate-badge" style={{ background: "rgba(139, 92, 246, 0.12)", color: "var(--color-primary)", border: "1px solid rgba(139, 92, 246, 0.3)" }}>✓ Simulating</span>}
-                  {c.recommended && selectedCandidate === c.id && <span className="candidate-badge rec" style={{ right: "7.2rem", background: "rgba(16, 185, 129, 0.15)", color: "var(--color-success)", border: "1px solid rgba(16, 185, 129, 0.3)" }}>✓ Simulating</span>}
+                  {recommendedCandidateId === c.id && <span className="candidate-badge rec">🏆 Best Choice</span>}
+                  {recommendedCandidateId !== c.id && selectedCandidate === c.id && <span className="candidate-badge" style={{ background: "rgba(139, 92, 246, 0.12)", color: "var(--color-primary)", border: "1px solid rgba(139, 92, 246, 0.3)" }}>✓ Simulating</span>}
+                  {recommendedCandidateId === c.id && selectedCandidate === c.id && <span className="candidate-badge rec" style={{ right: "7.2rem", background: "rgba(16, 185, 129, 0.15)", color: "var(--color-success)", border: "1px solid rgba(16, 185, 129, 0.3)" }}>✓ Simulating</span>}
                   
                   <div className="candidate-id">{c.id}</div>
                   <div className="candidate-name">{c.name}</div>
