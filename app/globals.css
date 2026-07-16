@@ -794,3 +794,14 @@ body {
   color: white !important;
 }
 
+.bottom-tab-card {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.bottom-tab-card:hover {
+  background: rgba(139, 92, 246, 0.04) !important;
+  border-color: rgba(139, 92, 246, 0.25) !important;
+  transform: translateY(-2px);
+}
+
+

@@ -25,6 +25,8 @@ import {
   Briefcase,
   Layers,
   Sparkles,
+  Brain,
+  Code2,
 } from "lucide-react";
 import { mockGcpResponse, IAMData } from "../lib/mock-data";
 import { scanIAM, simulateCandidates, SimulationResult, RiskFinding, CandidateSimulation } from "../lib/iam-simulator";
@@ -912,31 +914,94 @@ export default function Home() {
       {/* ========================================== */}
       {demoStep >= 3 && (
         <section className="bottom-panel">
-          <div className="terminal-header">
-            <div className="terminal-title">
-              <Terminal size={18} />
-              <span>Gemini Deep Reasoning Engine</span>
-            </div>
-            <div className="terminal-tabs">
-              <button 
-                className={`terminal-tab ${activeCliTab === "reason" ? "active" : ""}`}
-                onClick={() => setActiveCliTab("reason")}
-              >
-                AI Reasoning Justification
-              </button>
-              <button 
-                className={`terminal-tab ${activeCliTab === "gcloud" ? "active" : ""}`}
-                onClick={() => setActiveCliTab("gcloud")}
-              >
-                gcloud Commands
-              </button>
-              <button 
-                className={`terminal-tab ${activeCliTab === "terraform" ? "active" : ""}`}
-                onClick={() => setActiveCliTab("terraform")}
-              >
-                Terraform Configuration
-              </button>
-            </div>
+          {/* Three big, beautiful, tactile buttons in a 3-column grid */}
+          <div className="bottom-tabs-grid" style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr 1fr",
+            gap: "0.8rem",
+            marginBottom: "0.8rem",
+            marginTop: "0.4rem"
+          }}>
+            <button 
+              onClick={() => setActiveCliTab("reason")}
+              style={{
+                background: activeCliTab === "reason" ? "rgba(139, 92, 246, 0.1)" : "rgba(255,255,255,0.01)",
+                border: activeCliTab === "reason" ? "1px solid var(--color-primary)" : "1px solid rgba(255,255,255,0.05)",
+                boxShadow: activeCliTab === "reason" ? "0 4px 12px rgba(139, 92, 246, 0.15)" : "none",
+                borderRadius: "10px",
+                padding: "0.8rem 1rem",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: "0.25rem",
+                textAlign: "left",
+                outline: "none"
+              }}
+              className="bottom-tab-card"
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: activeCliTab === "reason" ? "var(--color-primary)" : "var(--text-secondary)" }}>
+                <Brain size={16} style={{ color: activeCliTab === "reason" ? "var(--color-primary)" : "var(--text-muted)" }} />
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.02em" }}>AI Reasoning Justification</span>
+              </div>
+              <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.2" }}>
+                Gemini explanation of nesting & least-disruption cut logics
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setActiveCliTab("gcloud")}
+              style={{
+                background: activeCliTab === "gcloud" ? "rgba(139, 92, 246, 0.1)" : "rgba(255,255,255,0.01)",
+                border: activeCliTab === "gcloud" ? "1px solid var(--color-primary)" : "1px solid rgba(255,255,255,0.05)",
+                boxShadow: activeCliTab === "gcloud" ? "0 4px 12px rgba(139, 92, 246, 0.15)" : "none",
+                borderRadius: "10px",
+                padding: "0.8rem 1rem",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: "0.25rem",
+                textAlign: "left",
+                outline: "none"
+              }}
+              className="bottom-tab-card"
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: activeCliTab === "gcloud" ? "var(--color-primary)" : "var(--text-secondary)" }}>
+                <Terminal size={16} style={{ color: activeCliTab === "gcloud" ? "var(--color-primary)" : "var(--text-muted)" }} />
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.02em" }}>gcloud Commands</span>
+              </div>
+              <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.2" }}>
+                Generated Google Cloud SDK CLI commands for immediate execution
+              </span>
+            </button>
+
+            <button 
+              onClick={() => setActiveCliTab("terraform")}
+              style={{
+                background: activeCliTab === "terraform" ? "rgba(139, 92, 246, 0.1)" : "rgba(255,255,255,0.01)",
+                border: activeCliTab === "terraform" ? "1px solid var(--color-primary)" : "1px solid rgba(255,255,255,0.05)",
+                boxShadow: activeCliTab === "terraform" ? "0 4px 12px rgba(139, 92, 246, 0.15)" : "none",
+                borderRadius: "10px",
+                padding: "0.8rem 1rem",
+                cursor: "pointer",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: "0.25rem",
+                textAlign: "left",
+                outline: "none"
+              }}
+              className="bottom-tab-card"
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", color: activeCliTab === "terraform" ? "var(--color-primary)" : "var(--text-secondary)" }}>
+                <Code2 size={16} style={{ color: activeCliTab === "terraform" ? "var(--color-primary)" : "var(--text-muted)" }} />
+                <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.02em" }}>Terraform Configuration</span>
+              </div>
+              <span style={{ fontSize: "0.68rem", color: "var(--text-muted)", fontWeight: 500, lineHeight: "1.2" }}>
+                Declarative Infrastructure-as-Code for gitops-driven remediation
+              </span>
+            </button>
           </div>
 
           <div className="terminal-content">
