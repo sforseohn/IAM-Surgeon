@@ -408,7 +408,7 @@ export default function Home() {
           <div>
             <h1>Optimal Cutting Edge</h1>
             <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-              IAM Surgeon & Nesting Group Sim Analyzer
+              지능형 IAM 권한 분석 및 중첩 그룹 정밀 외과 시뮬레이터
             </div>
           </div>
           <span className="brand-badge">Gemini Reasoning</span>
