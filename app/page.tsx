@@ -476,7 +476,8 @@ export default function Home() {
                   display: "flex",
                   flexDirection: "column",
                   gap: "0.8rem",
-                  boxShadow: "inset 0 0 20px rgba(0,0,0,0.2)"
+                  boxShadow: "inset 0 0 20px rgba(0,0,0,0.2)",
+                  flexShrink: 0
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "var(--text-secondary)", letterSpacing: "0.05em" }}>
