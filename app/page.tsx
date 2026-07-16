@@ -245,6 +245,17 @@ export default function Home() {
     setActiveTab("after");
     setAiLoading(true);
     
+    // Helper function for safe pre-rendered static reasoning
+    const getFallbackReasoning = (candId: "A" | "B" | "C") => {
+      if (candId === "C") {
+        return "Removing Alice from the Developers group would revoke her access to 12 normal projects, causing immediate operational downtime. Conversely, breaking the entire nested group chain (Platform ➡️ Prod Admins) affects all 23 platform engineers who legitimately require production access. By severing the redundant nested linkage and directly binding the granular Compute Viewer role to Alice, we successfully preserve legitimate development scopes and restore essential reading rights with the absolute smallest blast radius (Cost Score: 138 vs 1110).";
+      } else if (candId === "B") {
+        return "Severing the connection between the Platform group and Prod Admins shuts down the high-risk authority path. However, this causes massive business friction: all 23 platform engineers recursively nested lose their Compute Admin access, resulting in a high impact score of 308. Operational complexity is 1, but user disruption is severe.";
+      } else {
+        return "Removing Alice from the Developers group is a highly blunt remediation. It cuts her access to 12 normal projects, violating the principle of least disruption. Furthermore, because her direct group binding to Platform remains intact, she STILL retains the risky Compute Admin role in the production folder (Remaining Risky Paths: 1, Cost Score: 1110). This leaves the core threat unresolved.";
+      }
+    };
+
     // Call Gemini API Route for explanations
     try {
       const response = await fetch("/api/reason", {
@@ -256,21 +267,17 @@ export default function Home() {
         }),
       });
       const data = await response.json();
-      if (data.success) {
+      if (data.success && data.reasoning) {
         setGeminiExplanation(data.reasoning);
       } else {
-        throw new Error(data.message || "Failed calling AI");
+        // Silent and graceful local fallback when API key is missing (or not configured)
+        console.log("ℹ️ Local Mode: Rendering pre-rendered premium static reasoning fallback (Provide GEMINI_API_KEY env var to invoke live AI reasoning).");
+        setGeminiExplanation(getFallbackReasoning(selectedCandidate));
       }
     } catch (e) {
-      console.warn("Gemini API direct call failed or API Key missing. Rendering premium static reasoning fallback.", e);
-      // Hardcoded high-fidelity fallback reasoning matching the prompt
-      setGeminiExplanation(
-        selectedCandidate === "C"
-          ? "Removing Alice from the Developers group would revoke her access to 12 normal projects, causing immediate operational downtime. Conversely, breaking the entire nested group chain (Platform ➡️ Prod Admins) affects all 23 platform engineers who legitimately require production access. By severing the redundant nested linkage and directly binding the granular Compute Viewer role to Alice, we successfully preserve legitimate development scopes and restore essential reading rights with the absolute smallest blast radius (Cost Score: 138 vs 1110)."
-          : selectedCandidate === "B"
-          ? "Severing the connection between the Platform group and Prod Admins shuts down the high-risk authority path. However, this causes massive business friction: all 23 platform engineers recursively nested lose their Compute Admin access, resulting in a high impact score of 308. Operational complexity is 1, but user disruption is severe."
-          : "Removing Alice from the Developers group is a highly blunt remediation. It cuts her access to 12 normal projects, violating the principle of least disruption. Furthermore, because her direct group binding to Platform remains intact, she STILL retains the risky Compute Admin role in the production folder (Remaining Risky Paths: 1, Cost Score: 1110). This leaves the core threat unresolved."
-      );
+      // Graceful local fallback for network/offline errors
+      console.log("ℹ️ Offline/Network Fallback: Rendering pre-rendered premium static reasoning.");
+      setGeminiExplanation(getFallbackReasoning(selectedCandidate));
     } finally {
       setAiLoading(false);
     }
