@@ -651,83 +651,90 @@ export default function Home() {
                 </p>
               </div>
 
-              <textarea
-                style={{
-                  width: "100%",
-                  height: "55px",
-                  fontSize: "0.72rem",
-                  padding: "0.4rem",
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid var(--border-glass)",
-                  borderRadius: "6px",
-                  color: "var(--text-primary)",
-                  resize: "none",
-                  fontFamily: "var(--font-sans)"
-                }}
-                placeholder="e.g., Keep development access, but block production admin privileges..."
-                value={nlpPolicyInput}
-                onChange={(e) => setNlpPolicyInput(e.target.value)}
-              />
+              {/* STEP 1 SECTION */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem" }}>
+                <div style={{ fontSize: "0.65rem", fontWeight: 700, color: "var(--color-secondary)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                  <span style={{ background: "var(--color-secondary)", color: "#000", width: "14px", height: "14px", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", fontWeight: 900, textAlign: "center" }}>1</span>
+                  SELECT A PRESET (또는 직접 입력)
+                </div>
+                
+                <textarea
+                  style={{
+                    width: "100%",
+                    height: "55px",
+                    fontSize: "0.72rem",
+                    padding: "0.4rem",
+                    background: "rgba(0,0,0,0.3)",
+                    border: "1px solid var(--border-glass)",
+                    borderRadius: "6px",
+                    color: "var(--text-primary)",
+                    resize: "none",
+                    fontFamily: "var(--font-sans)"
+                  }}
+                  placeholder="e.g., Keep development access, but block production admin privileges..."
+                  value={nlpPolicyInput}
+                  onChange={(e) => {
+                    setNlpPolicyInput(e.target.value);
+                    setCompiledConstraint(null);
+                  }}
+                />
 
-              {/* Quick Presets */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
-                <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>QUICK PRESETS:</span>
-                <button
-                  className="btn btn-secondary"
-                  style={{
-                    padding: "0.25rem 0.4rem",
-                    fontSize: "0.65rem",
-                    justifyContent: "flex-start",
-                    textAlign: "left",
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.05)"
-                  }}
-                  onClick={() => handleApplyNlpPreset("Keep dev environment, block production deletion")}
-                >
-                  • Keep dev environment, block production deletion
-                </button>
-                <button
-                  className="btn btn-secondary"
-                  style={{
-                    padding: "0.25rem 0.4rem",
-                    fontSize: "0.65rem",
-                    justifyContent: "flex-start",
-                    textAlign: "left",
-                    background: "rgba(255,255,255,0.02)",
-                    border: "1px solid rgba(255,255,255,0.05)"
-                  }}
-                  onClick={() => handleApplyNlpPreset("Keep billing read-only, block folder admin")}
-                >
-                  • Keep billing read-only, block folder admin
-                </button>
+                {/* Tactical Preset Cards */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", marginTop: "0.15rem" }}>
+                  <button
+                    className={`preset-tactile-btn ${nlpPolicyInput === "Keep dev environment, block production deletion" ? "active-preset" : ""}`}
+                    onClick={() => handleApplyNlpPreset("Keep dev environment, block production deletion")}
+                  >
+                    <span style={{ fontSize: "0.6rem", fontWeight: 800, padding: "0.1rem 0.3rem", background: "rgba(255,255,255,0.05)", borderRadius: "4px", color: "var(--text-secondary)" }}>P1</span>
+                    <span style={{ flex: 1 }}>• Keep dev environment, block production deletion</span>
+                  </button>
+                  <button
+                    className={`preset-tactile-btn ${nlpPolicyInput === "Keep billing read-only, block folder admin" ? "active-preset" : ""}`}
+                    onClick={() => handleApplyNlpPreset("Keep billing read-only, block folder admin")}
+                  >
+                    <span style={{ fontSize: "0.6rem", fontWeight: 800, padding: "0.1rem 0.3rem", background: "rgba(255,255,255,0.05)", borderRadius: "4px", color: "var(--text-secondary)" }}>P2</span>
+                    <span style={{ flex: 1 }}>• Keep billing read-only, block folder admin</span>
+                  </button>
+                </div>
               </div>
 
-              <button
-                className="btn btn-primary"
-                style={{
-                  width: "100%",
-                  padding: "0.35rem",
-                  fontSize: "0.72rem",
-                  background: "var(--color-primary)",
-                  boxShadow: "0 2px 6px var(--color-primary-glow)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "0.25rem"
-                }}
-                onClick={() => handleCompilePolicy()}
-                disabled={!nlpPolicyInput || nlpLoading}
-              >
-                {nlpLoading ? (
-                  <>
-                    <div className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px" }} /> Compiling Policy AST...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={11} /> Compile & Apply Policy
-                  </>
-                )}
-              </button>
+              {/* STEP 2 SECTION */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.3rem", marginTop: "0.15rem" }}>
+                <div style={{ fontSize: "0.65rem", fontWeight: 700, color: nlpPolicyInput && !compiledConstraint ? "var(--color-primary)" : "var(--text-muted)", display: "flex", alignItems: "center", gap: "0.25rem" }}>
+                  <span style={{ background: nlpPolicyInput && !compiledConstraint ? "var(--color-primary)" : "var(--text-muted)", color: "#000", width: "14px", height: "14px", borderRadius: "50%", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: "0.55rem", fontWeight: 900, textAlign: "center" }}>2</span>
+                  COMPILE & DEPLOY
+                </div>
+
+                <button
+                  className={`btn ${nlpPolicyInput && !compiledConstraint && !nlpLoading ? "btn-glowing-pulse" : "btn-primary"}`}
+                  style={{
+                    width: "100%",
+                    padding: "0.45rem",
+                    fontSize: "0.72rem",
+                    background: nlpPolicyInput && !compiledConstraint ? "var(--color-primary)" : "rgba(255,255,255,0.02)",
+                    border: nlpPolicyInput && !compiledConstraint ? "1px solid var(--color-primary)" : "1px solid rgba(255,255,255,0.05)",
+                    color: nlpPolicyInput && !compiledConstraint ? "#fff" : "var(--text-muted)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.25rem",
+                    cursor: nlpPolicyInput ? "pointer" : "not-allowed",
+                    transition: "all 0.3s ease"
+                  }}
+                  onClick={() => handleCompilePolicy()}
+                  disabled={!nlpPolicyInput || nlpLoading}
+                >
+                  {nlpLoading ? (
+                    <>
+                      <div className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px", borderTopColor: "#fff" }} /> Compiling Policy AST...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={11} /> Compile & Apply Policy
+                    </>
+                  )}
+                </button>
+              </div>
 
               {/* Compiled Output Block */}
               {compiledConstraint && (
@@ -741,7 +748,8 @@ export default function Home() {
                   color: "var(--color-success)",
                   display: "flex",
                   flexDirection: "column",
-                  gap: "0.15rem"
+                  gap: "0.15rem",
+                  marginTop: "0.15rem"
                 }}>
                   <div style={{ fontWeight: 800, fontSize: "0.6rem", display: "flex", alignItems: "center", gap: "0.2rem" }}>
                     <span>✓ COMPILED CONSTRAINT AST:</span>
