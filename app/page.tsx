@@ -420,27 +420,27 @@ export default function Home() {
           )}
           
           <button 
-            className="btn btn-secondary" 
+            className={`btn ${demoStep === 0 ? "btn-glowing-pulse" : "btn-secondary"}`} 
             onClick={handleScanIAM}
             disabled={demoStep >= 1}
           >
-            <Search size={16} /> 1. Scan IAM
+            <Search size={16} /> {demoStep >= 1 ? "✓ 1. IAM Scanned" : "1. Scan IAM"}
           </button>
           
           <button 
-            className="btn btn-primary" 
+            className={`btn ${demoStep === 1 ? "btn-glowing-pulse" : "btn-secondary"}`} 
             onClick={handleFindOptimalCut}
             disabled={demoStep < 1 || demoStep >= 2}
           >
-            <Zap size={16} /> 2. Find Optimal Cut
+            <Zap size={16} /> {demoStep >= 2 ? "✓ 2. Cut Identified" : "2. Find Optimal Cut"}
           </button>
           
           <button 
-            className="btn btn-success" 
+            className={`btn ${demoStep === 2 ? "btn-glowing-pulse" : "btn-secondary"}`} 
             onClick={handleApplySimulation}
-            disabled={demoStep < 2}
+            disabled={demoStep < 2 || demoStep >= 3}
           >
-            <Sparkles size={16} /> 3. Apply Simulation
+            <Sparkles size={16} /> {demoStep >= 3 ? "✓ 3. Simulated" : "3. Apply Simulation"}
           </button>
         </div>
       </header>
