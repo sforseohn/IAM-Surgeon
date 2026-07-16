@@ -629,10 +629,12 @@ export default function Home() {
                 ))}
               </>
             )}
-            {/* ========================================== */}
-            {/* CUSTOM CONSTRAINTS: NLP COMPILER PANEL */}
-            {/* ========================================== */}
-            <div className="nlp-compiler-panel" style={{
+          </div> {/* End of panel-content scroll area */}
+
+          {/* ========================================== */}
+          {/* CUSTOM CONSTRAINTS: NLP COMPILER PANEL */}
+          {/* ========================================== */}
+          <div className="nlp-compiler-panel" style={{
               borderTop: "1px solid var(--border-glass)",
               padding: "1rem",
               marginTop: "auto",
@@ -763,7 +765,6 @@ export default function Home() {
                 </div>
               )}
             </div>
-          </div>
         </aside>
 
         {/* CENTER COLUMN: AUTHORITY GRAPH */}
