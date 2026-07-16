@@ -405,11 +405,38 @@ export default function Home() {
               findings.map((f) => (
                 <div key={f.id} className={`finding-card ${f.severity}`}>
                   <div className="finding-header">
+                    <span className="finding-id-badge" style={{ fontFamily: "var(--font-mono)", fontSize: "0.65rem", background: "rgba(255,255,255,0.05)", padding: "0.1rem 0.3rem", borderRadius: "4px", color: "var(--text-secondary)" }}>
+                      {f.id.split("-").slice(0, 2).join("-")}
+                    </span>
                     <span className={`severity-badge ${f.severity}`}>{f.severity}</span>
                   </div>
-                  <div className="finding-title">{f.title}</div>
-                  <div className="finding-desc">{f.description}</div>
-                  <div className="finding-evidence">{f.evidence}</div>
+                  <div className="finding-title" style={{ fontSize: "0.85rem", fontWeight: 700, marginTop: "0.2rem" }}>
+                    {f.id.includes("01") ? "🔗 " : f.id.includes("02") ? "🛡️ " : "🔀 "} {f.title}
+                  </div>
+                  
+                  {/* Highly visual summary block */}
+                  <div className="finding-highlight-summary" style={{ margin: "0.4rem 0", fontSize: "0.75rem", color: "var(--text-secondary)", lineHeight: "1.3" }}>
+                    {f.id.includes("RISK-01") ? (
+                      <div>
+                        Target: <code style={{ color: "var(--color-danger)" }}>alice</code> inherits <code style={{ color: "var(--color-danger)" }}>Compute Admin</code> through nested chain:
+                        <div style={{ marginTop: "0.25rem", background: "rgba(0,0,0,0.2)", padding: "0.3rem", borderRadius: "6px", fontSize: "0.7rem", fontFamily: "var(--font-mono)", color: "var(--color-danger)", display: "flex", gap: "0.2rem", alignItems: "center" }}>
+                          alice ➡️ dev ➡️ plat ➡️ admins
+                        </div>
+                      </div>
+                    ) : f.id.includes("RISK-02") ? (
+                      <div>
+                        Violation: Broad administrative scope on <code>production-folder</code> violates <strong>least privilege</strong> rules.
+                      </div>
+                    ) : (
+                      <div>
+                        Redundancy: <code style={{ color: "var(--color-warning)" }}>alice</code> has multiple paths to production, complicating audit.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="finding-evidence" style={{ fontSize: "0.7rem", opacity: 0.8, color: "var(--text-muted)" }}>
+                    <strong>Evidence:</strong> {f.evidence}
+                  </div>
                 </div>
               ))
             )}
@@ -485,7 +512,43 @@ export default function Home() {
                   
                   <div className="candidate-id">{c.id}</div>
                   <div className="candidate-name">{c.name}</div>
-                  <div className="candidate-desc">{c.description}</div>
+                  
+                  {/* Scannable Bullet Checklist Badges (Saves cognitive load!) */}
+                  <div className="candidate-checklist" style={{ margin: "0.5rem 0", display: "flex", flexDirection: "column", gap: "0.25rem", borderTop: "1px solid rgba(255,255,255,0.03)", paddingTop: "0.5rem" }}>
+                    {c.id === "A" && (
+                      <>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-danger)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ❌ Alice loses all 12 dev projects
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-danger)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ⚠️ Unresolved admin risk path remains
+                        </div>
+                      </>
+                    )}
+                    {c.id === "B" && (
+                      <>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-danger)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ❌ platform team (23 users) loses admin
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-success)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ✓ Alice's admin risk is severed
+                        </div>
+                      </>
+                    )}
+                    {c.id === "C" && (
+                      <>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-success)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ✓ Alice's normal dev work preserved
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-success)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ✓ 100% administrative threat resolved
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--color-success)", display: "flex", alignItems: "center", gap: "0.3rem" }}>
+                          ✓ No legitimate users disrupted
+                        </div>
+                      </>
+                    )}
+                  </div>
                   
                   <div className="metrics-grid">
                     <div className="metric-item">
@@ -569,11 +632,66 @@ export default function Home() {
             ) : (
               <>
                 {activeCliTab === "reason" && (
-                  <div className="reasoning-text">
-                    <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: 700, marginBottom: "0.4rem", color: "#a78bfa" }}>
-                      <TrendingDown size={16} /> Why Candidate {selectedCandidate} is {selectedCandidate === "C" ? "Recommended" : "Not Ideal"}:
-                    </p>
-                    {geminiExplanation}
+                  <div className="reasoning-text" style={{ padding: "0.2rem" }}>
+                    {/* Visual Comparison Summary */}
+                    <div className="reasoning-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+                      <div className="reasoning-box pros" style={{ background: "rgba(16, 185, 129, 0.04)", border: "1px solid rgba(16, 185, 129, 0.12)", borderRadius: "8px", padding: "0.8rem" }}>
+                        <h4 style={{ color: "var(--color-success)", fontSize: "0.8rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                          ✓ ADVANTAGES (장점)
+                        </h4>
+                        <ul style={{ fontSize: "0.78rem", color: "var(--text-secondary)", paddingLeft: "1.1rem", margin: 0, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                          {selectedCandidate === "C" ? (
+                            <>
+                              <li><strong>Zero Downtime</strong>: Preserves access to 12 normal dev projects.</li>
+                              <li><strong>Zero Team Interruption</strong>: No other platform engineers lose their admin rights.</li>
+                              <li><strong>100% Resolved</strong>: Completely isolates Alice's administrative path.</li>
+                            </>
+                          ) : selectedCandidate === "B" ? (
+                            <>
+                              <li><strong>Threat Severed</strong>: Effectively closes the admin propagation vector.</li>
+                              <li><strong>Low Complexity</strong>: Simple 1-step membership modification.</li>
+                            </>
+                          ) : (
+                            <>
+                              <li><strong>Fast Revocation</strong>: Quick 1-step group removal action.</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                      
+                      <div className="reasoning-box cons" style={{ background: "rgba(239, 68, 68, 0.04)", border: "1px solid rgba(239, 68, 68, 0.12)", borderRadius: "8px", padding: "0.8rem" }}>
+                        <h4 style={{ color: "var(--color-danger)", fontSize: "0.8rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem", marginBottom: "0.4rem" }}>
+                          ❌ DRAWBACKS (단점)
+                        </h4>
+                        <ul style={{ fontSize: "0.78rem", color: "var(--text-secondary)", paddingLeft: "1.1rem", margin: 0, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                          {selectedCandidate === "C" ? (
+                            <>
+                              <li><strong>Operational Steps</strong>: Requires 2 distinct steps (1 cut + 1 binding).</li>
+                            </>
+                          ) : selectedCandidate === "B" ? (
+                            <>
+                              <li><strong>Massive Disruption</strong>: 23 engineers recursively lose production access!</li>
+                              <li><strong>Heavy Blast Radius</strong>: Drastically impacts legitimate operations.</li>
+                            </>
+                          ) : (
+                            <>
+                              <li><strong>Severe Outage</strong>: Alice immediately loses all 12 of her dev projects!</li>
+                              <li><strong>Redundant Path</strong>: She STILL inherits Admin rights via other groups.</li>
+                            </>
+                          )}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Gemini Raw Output */}
+                    <div style={{ background: "rgba(255,255,255,0.01)", border: "1px solid rgba(255,255,255,0.02)", borderRadius: "8px", padding: "0.8rem" }}>
+                      <p style={{ display: "flex", alignItems: "center", gap: "0.4rem", fontWeight: 700, marginBottom: "0.4rem", color: "#a78bfa", fontSize: "0.8rem" }}>
+                        <TrendingDown size={16} /> AI Deep Surgeon Reasoning Justification:
+                      </p>
+                      <div style={{ fontSize: "0.82rem", color: "var(--text-primary)", lineHeight: "1.45" }}>
+                        {geminiExplanation}
+                      </div>
+                    </div>
                   </div>
                 )}
                 {activeCliTab === "gcloud" && (
