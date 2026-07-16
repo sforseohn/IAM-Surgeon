@@ -1,0 +1,16 @@
+{
+  "users": ["alice"],
+  "groups": ["developers", "platform", "prod-admins"],
+  "memberships": [
+    ["alice", "developers"],
+    ["developers", "platform"],
+    ["platform", "prod-admins"]
+  ],
+  "bindings": [
+    {
+      "principal": "prod-admins",
+      "role": "roles/compute.admin",
+      "resource": "production-folder"
+    }
+  ]
+}
