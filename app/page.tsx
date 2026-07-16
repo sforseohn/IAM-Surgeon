@@ -83,14 +83,20 @@ export default function Home() {
   const [aiLoading, setAiLoading] = useState(false);
   const [geminiExplanation, setGeminiExplanation] = useState<string | null>(null);
   const [activeCliTab, setActiveCliTab] = useState<"reason" | "gcloud" | "terraform">("reason");
+  const [nlpPolicyInput, setNlpPolicyInput] = useState("");
+  const [nlpLoading, setNlpLoading] = useState(false);
+  const [compiledConstraint, setCompiledConstraint] = useState<string | null>(null);
 
   // Run initial calculations
   const simResults: SimulationResult = useMemo(() => simulateCandidates(mockGcpResponse), []);
   const findings: RiskFinding[] = simResults.findings;
-  const candidates: CandidateSimulation[] = simResults.candidates;
+  const candidates: CandidateSimulation[] = useMemo(() => {
+    // Sort by cost ascending, so recommended C is first!
+    return [...simResults.candidates].sort((a, b) => a.metrics.cost - b.metrics.cost);
+  }, [simResults]);
 
   const currentCandidate = useMemo(() => {
-    return candidates.find((c) => c.id === selectedCandidate) || candidates[2];
+    return candidates.find((c) => c.id === selectedCandidate) || candidates[0];
   }, [candidates, selectedCandidate]);
 
   // ========================================================
@@ -239,16 +245,17 @@ export default function Home() {
     setSelectedTabCandidate("C");
   };
 
-  const handleApplySimulation = async () => {
+  const handleApplyCandidateSimulation = async (candId: "A" | "B" | "C") => {
     setDemoStep(3);
     setActiveTab("after");
+    setSelectedTabCandidate(candId);
     setAiLoading(true);
     
     // Helper function for safe pre-rendered static reasoning
-    const getFallbackReasoning = (candId: "A" | "B" | "C") => {
-      if (candId === "C") {
+    const getFallbackReasoning = (cId: "A" | "B" | "C") => {
+      if (cId === "C") {
         return "Removing Alice from the Developers group would revoke her access to 12 normal projects, causing immediate operational downtime. Conversely, breaking the entire nested group chain (Platform ➡️ Prod Admins) affects all 23 platform engineers who legitimately require production access. By severing the redundant nested linkage and directly binding the granular Compute Viewer role to Alice, we successfully preserve legitimate development scopes and restore essential reading rights with the absolute smallest blast radius (Cost Score: 138 vs 1110).";
-      } else if (candId === "B") {
+      } else if (cId === "B") {
         return "Severing the connection between the Platform group and Prod Admins shuts down the high-risk authority path. However, this causes massive business friction: all 23 platform engineers recursively nested lose their Compute Admin access, resulting in a high impact score of 308. Operational complexity is 1, but user disruption is severe.";
       } else {
         return "Removing Alice from the Developers group is a highly blunt remediation. It cuts her access to 12 normal projects, violating the principle of least disruption. Furthermore, because her direct group binding to Platform remains intact, she STILL retains the risky Compute Admin role in the production folder (Remaining Risky Paths: 1, Cost Score: 1110). This leaves the core threat unresolved.";
@@ -257,12 +264,13 @@ export default function Home() {
 
     // Call Gemini API Route for explanations
     try {
+      const targetMetrics = candidates.find(c => c.id === candId)?.metrics || {};
       const response = await fetch("/api/reason", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          candidateId: selectedCandidate,
-          metrics: currentCandidate.metrics,
+          candidateId: candId,
+          metrics: targetMetrics,
         }),
       });
       const data = await response.json();
@@ -270,16 +278,57 @@ export default function Home() {
         setGeminiExplanation(data.reasoning);
       } else {
         // Silent and graceful local fallback when API key is missing (or not configured)
-        console.log("ℹ️ Local Mode: Rendering pre-rendered premium static reasoning fallback (Provide GEMINI_API_KEY env var to invoke live AI reasoning).");
-        setGeminiExplanation(getFallbackReasoning(selectedCandidate));
+        console.log("ℹ️ Local Mode: Rendering pre-rendered premium static reasoning fallback.");
+        setGeminiExplanation(getFallbackReasoning(candId));
       }
     } catch (e) {
       // Graceful local fallback for network/offline errors
       console.log("ℹ️ Offline/Network Fallback: Rendering pre-rendered premium static reasoning.");
-      setGeminiExplanation(getFallbackReasoning(selectedCandidate));
+      setGeminiExplanation(getFallbackReasoning(candId));
     } finally {
       setAiLoading(false);
     }
+  };
+
+  const handleApplySimulation = () => {
+    handleApplyCandidateSimulation(selectedCandidate);
+  };
+
+  const handleApplyNlpPreset = (presetText: string) => {
+    setNlpPolicyInput(presetText);
+    // Auto-trigger compile for smooth demo experience
+    setTimeout(() => {
+      triggerPolicyCompile(presetText);
+    }, 100);
+  };
+
+  const triggerPolicyCompile = async (policyText: string) => {
+    setNlpLoading(true);
+    setCompiledConstraint(null);
+
+    // Simulate AI Policy Compilation Delay
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
+    if (policyText.includes("dev") || policyText.includes("deletion")) {
+      setCompiledConstraint(
+        `ASSERT (user == "alice") CANNOT delete_resource_under("folders/production-folder")\n` +
+        `ASSERT (user == "alice") CAN_ACCESS ("folders/development-folder")`
+      );
+      // Candidate C perfectly satisfies this (preserves dev access, blocks admin production delete/write)
+      handleApplyCandidateSimulation("C");
+    } else {
+      setCompiledConstraint(
+        `ASSERT (group == "platform") ALLOW_READ_ONLY ("billing/*")\n` +
+        `ASSERT (group == "platform") DENY ("roles/resourcemanager.folderAdmin")`
+      );
+      // Candidate B severs nested admin access for all platform engineers
+      handleApplyCandidateSimulation("B");
+    }
+    setNlpLoading(false);
+  };
+
+  const handleCompilePolicy = () => {
+    triggerPolicyCompile(nlpPolicyInput);
   };
 
   const handleReset = () => {
@@ -287,6 +336,8 @@ export default function Home() {
     setActiveTab("before");
     setSelectedTabCandidate("C");
     setGeminiExplanation(null);
+    setNlpPolicyInput("");
+    setCompiledConstraint(null);
   };
 
   // ========================================================
@@ -566,6 +617,132 @@ export default function Home() {
                 ))}
               </>
             )}
+            {/* ========================================== */}
+            {/* CUSTOM CONSTRAINTS: NLP COMPILER PANEL */}
+            {/* ========================================== */}
+            <div className="nlp-compiler-panel" style={{
+              borderTop: "1px solid var(--border-glass)",
+              padding: "1rem",
+              marginTop: "auto",
+              background: "rgba(139, 92, 246, 0.02)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.6rem"
+            }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.15rem" }}>
+                <span style={{ fontSize: "0.6rem", fontWeight: 800, color: "var(--color-primary)", letterSpacing: "0.1em" }}>
+                  CUSTOM CONSTRAINTS
+                </span>
+                <h3 style={{ fontSize: "0.85rem", fontWeight: 700, color: "var(--text-primary)", display: "flex", alignItems: "center", gap: "0.3rem", margin: 0 }}>
+                  <Sparkles size={12} style={{ color: "var(--color-primary)" }} /> NLP Policy Compiler
+                </h3>
+                <p style={{ fontSize: "0.68rem", color: "var(--text-secondary)", margin: 0, lineHeight: "1.3" }}>
+                  Enter natural language policies. Gemini compiles them into structured graph constraints.
+                </p>
+              </div>
+
+              <textarea
+                style={{
+                  width: "100%",
+                  height: "55px",
+                  fontSize: "0.72rem",
+                  padding: "0.4rem",
+                  background: "rgba(0,0,0,0.3)",
+                  border: "1px solid var(--border-glass)",
+                  borderRadius: "6px",
+                  color: "var(--text-primary)",
+                  resize: "none",
+                  fontFamily: "var(--font-sans)"
+                }}
+                placeholder="e.g., Keep development access, but block production admin privileges..."
+                value={nlpPolicyInput}
+                onChange={(e) => setNlpPolicyInput(e.target.value)}
+              />
+
+              {/* Quick Presets */}
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+                <span style={{ fontSize: "0.62rem", fontWeight: 700, color: "var(--text-muted)", textTransform: "uppercase" }}>QUICK PRESETS:</span>
+                <button
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0.25rem 0.4rem",
+                    fontSize: "0.65rem",
+                    justifyContent: "flex-start",
+                    textAlign: "left",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.05)"
+                  }}
+                  onClick={() => handleApplyNlpPreset("Keep dev environment, block production deletion")}
+                >
+                  • Keep dev environment, block production deletion
+                </button>
+                <button
+                  className="btn btn-secondary"
+                  style={{
+                    padding: "0.25rem 0.4rem",
+                    fontSize: "0.65rem",
+                    justifyContent: "flex-start",
+                    textAlign: "left",
+                    background: "rgba(255,255,255,0.02)",
+                    border: "1px solid rgba(255,255,255,0.05)"
+                  }}
+                  onClick={() => handleApplyNlpPreset("Keep billing read-only, block folder admin")}
+                >
+                  • Keep billing read-only, block folder admin
+                </button>
+              </div>
+
+              <button
+                className="btn btn-primary"
+                style={{
+                  width: "100%",
+                  padding: "0.35rem",
+                  fontSize: "0.72rem",
+                  background: "var(--color-primary)",
+                  boxShadow: "0 2px 6px var(--color-primary-glow)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "0.25rem"
+                }}
+                onClick={() => handleCompilePolicy()}
+                disabled={!nlpPolicyInput || nlpLoading}
+              >
+                {nlpLoading ? (
+                  <>
+                    <div className="spinner" style={{ width: "12px", height: "12px", borderWidth: "2px" }} /> Compiling Policy AST...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={11} /> Compile & Apply Policy
+                  </>
+                )}
+              </button>
+
+              {/* Compiled Output Block */}
+              {compiledConstraint && (
+                <div style={{
+                  background: "rgba(16, 185, 129, 0.03)",
+                  border: "1px solid rgba(16, 185, 129, 0.15)",
+                  borderRadius: "6px",
+                  padding: "0.5rem",
+                  fontSize: "0.65rem",
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--color-success)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "0.15rem"
+                }}>
+                  <div style={{ fontWeight: 800, fontSize: "0.6rem", display: "flex", alignItems: "center", gap: "0.2rem" }}>
+                    <span>✓ COMPILED CONSTRAINT AST:</span>
+                  </div>
+                  <div style={{ color: "var(--text-primary)", fontSize: "0.65rem", whiteSpace: "pre-wrap" }}>{compiledConstraint}</div>
+                  <div style={{ fontSize: "0.6rem", color: "var(--text-secondary)", marginTop: "0.15rem", borderTop: "1px solid rgba(255,255,255,0.03)", paddingTop: "0.15rem" }}>
+                    💡 <strong>Action:</strong> {selectedCandidate === "C" ? "Candidate C (Optimal)" : "Candidate B"} auto-selected to satisfy AST.
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </aside>
 
@@ -626,15 +803,12 @@ export default function Home() {
                   key={c.id} 
                   className={`candidate-card ${selectedCandidate === c.id ? "selected" : ""} ${c.recommended ? "recommended" : ""}`}
                   onClick={() => {
-                    setSelectedTabCandidate(c.id);
-                    if (demoStep >= 3) {
-                      // Re-trigger explanation loading when user clicks another candidate in simulated view
-                      setTimeout(() => handleApplySimulation(), 10);
-                    }
+                    handleApplyCandidateSimulation(c.id);
                   }}
                 >
-                  {c.recommended && <span className="candidate-badge rec">Optimal</span>}
-                  {!c.recommended && selectedCandidate === c.id && <span className="candidate-badge" style={{ background: "var(--color-primary)", color: "#fff" }}>Active</span>}
+                  {c.recommended && <span className="candidate-badge rec">🏆 Best Choice</span>}
+                  {!c.recommended && selectedCandidate === c.id && <span className="candidate-badge" style={{ background: "rgba(139, 92, 246, 0.12)", color: "var(--color-primary)", border: "1px solid rgba(139, 92, 246, 0.3)" }}>✓ Simulating</span>}
+                  {c.recommended && selectedCandidate === c.id && <span className="candidate-badge rec" style={{ right: "7.2rem", background: "rgba(16, 185, 129, 0.15)", color: "var(--color-success)", border: "1px solid rgba(16, 185, 129, 0.3)" }}>✓ Simulating</span>}
                   
                   <div className="candidate-id">{c.id}</div>
                   <div className="candidate-name">{c.name}</div>

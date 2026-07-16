@@ -695,9 +695,10 @@ body {
 }
 
 .rf-edge-cut .react-flow__edge-path {
-  stroke: #4b5563 !important;
-  stroke-dasharray: 4, 4;
-  opacity: 0.3;
+  stroke: var(--color-danger) !important;
+  stroke-dasharray: 6, 4;
+  stroke-width: 2.5px !important;
+  opacity: 0.85;
 }
 
 .rf-edge-normal .react-flow__edge-path {
