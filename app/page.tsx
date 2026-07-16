@@ -488,11 +488,11 @@ export default function Home() {
                       fontWeight: 800,
                       padding: "0.15rem 0.4rem",
                       borderRadius: "4px",
-                      background: demoStep < 3 ? "rgba(239, 68, 68, 0.12)" : selectedCandidate === "C" ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
-                      color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)",
+                      background: activeTab === "before" ? "rgba(239, 68, 68, 0.12)" : selectedCandidate === "C" ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                      color: activeTab === "before" ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)",
                       border: "1px solid"
                     }}>
-                      {demoStep < 3 ? "CRITICAL RISK" : selectedCandidate === "C" ? "FULLY SECURED" : "PARTIAL RISK"}
+                      {activeTab === "before" ? "CRITICAL RISK" : selectedCandidate === "C" ? "FULLY SECURED" : "PARTIAL RISK"}
                     </span>
                   </div>
 
@@ -504,13 +504,13 @@ export default function Home() {
                       height: "60px",
                       borderRadius: "50%",
                       background: `conic-gradient(${
-                        demoStep < 3 
+                        activeTab === "before" 
                           ? "var(--color-danger)" 
                           : selectedCandidate === "C" 
                           ? "var(--color-success)" 
                           : "var(--color-warning)"
                       } ${
-                        demoStep < 3 ? "122deg" : selectedCandidate === "C" ? "360deg" : selectedCandidate === "B" ? "288deg" : "162deg"
+                        activeTab === "before" ? "122deg" : selectedCandidate === "C" ? "360deg" : selectedCandidate === "B" ? "288deg" : "162deg"
                       }, rgba(255,255,255,0.05) 0)`,
                       display: "flex",
                       alignItems: "center",
@@ -529,15 +529,15 @@ export default function Home() {
                         fontWeight: 800,
                         fontSize: "1.1rem",
                         fontFamily: "var(--font-mono)",
-                        color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
+                        color: activeTab === "before" ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
                       }}>
-                        {demoStep < 3 ? "34%" : selectedCandidate === "C" ? "100%" : selectedCandidate === "B" ? "80%" : "45%"}
+                        {activeTab === "before" ? "34%" : selectedCandidate === "C" ? "100%" : selectedCandidate === "B" ? "80%" : "45%"}
                       </div>
                     </div>
 
                     <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                       <div style={{ fontSize: "0.8rem", fontWeight: 700, color: "var(--text-primary)" }}>
-                        {demoStep < 3 
+                        {activeTab === "before" 
                           ? "Critical Inheritance Threat" 
                           : selectedCandidate === "C" 
                           ? "Optimal Isolation Configured" 
@@ -546,7 +546,7 @@ export default function Home() {
                           : "Partial Isolation (Redundant Paths)"}
                       </div>
                       <div style={{ fontSize: "0.7rem", color: "var(--text-muted)", lineHeight: "1.3" }}>
-                        {demoStep < 3 
+                        {activeTab === "before" 
                           ? "Alice inherits administrative privileges through 3 nested vulnerabilities." 
                           : selectedCandidate === "C" 
                           ? "Risk isolated completely, required viewer role mapped. 0 users disrupted." 
@@ -574,17 +574,17 @@ export default function Home() {
                     <div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Active Risks</div>
                       <strong style={{
-                        color: demoStep < 3 ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
+                        color: activeTab === "before" ? "var(--color-danger)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-warning)"
                       }}>
-                        {demoStep < 3 ? "3" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "0" : "1"}
+                        {activeTab === "before" ? "3" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "0" : "1"}
                       </strong>
                     </div>
                     <div>
                       <div style={{ color: "var(--text-muted)", fontSize: "0.65rem" }}>Disrupted Users</div>
                       <strong style={{
-                        color: demoStep < 3 ? "var(--text-muted)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-danger)"
+                        color: activeTab === "before" ? "var(--text-muted)" : selectedCandidate === "C" ? "var(--color-success)" : "var(--color-danger)"
                       }}>
-                        {demoStep < 3 ? "0" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "23" : "1"}
+                        {activeTab === "before" ? "0" : selectedCandidate === "C" ? "0" : selectedCandidate === "B" ? "23" : "1"}
                       </strong>
                     </div>
                   </div>
@@ -825,7 +825,8 @@ export default function Home() {
                   key={c.id} 
                   className={`candidate-card ${selectedCandidate === c.id ? "selected" : ""} ${recommendedCandidateId === c.id ? "recommended" : ""}`}
                   onClick={() => {
-                    handleApplyCandidateSimulation(c.id);
+                    setSelectedTabCandidate(c.id);
+                    setActiveTab("after");
                   }}
                 >
                   {recommendedCandidateId === c.id && <span className="candidate-badge rec">🏆 Best Choice</span>}
